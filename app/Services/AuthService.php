@@ -20,7 +20,7 @@ class AuthService
         $user->role_id = $role->id;
         $user->save();
 
-        dd($user->id);
+        
         Log::info('User registered', ['id' => $user->id]);
 
         return $user;
