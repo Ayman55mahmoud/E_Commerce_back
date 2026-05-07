@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Coupon;
 
 class OrderRepository
 {
@@ -82,47 +83,120 @@ class OrderRepository
         return true;
     }
 
-   public function checkoutFromCart($user, $address)
-{
-    $cart = $user->cart()->with('items.product')->first();
+   public function checkoutFromCart(
+        $user,
+        $address,
+        $couponCode = null
+    ) {
 
-    if (!$cart || $cart->items->count() == 0) {
-        abort(400, 'Cart is empty');
-    }
+        $cart = $user->cart()->with('items.product')->first();
 
-    $order = Order::create([
-        'user_id' => $user->id,
-        'status' => 'pending',
-        'address' => $address,
-        'total_price' => 0
-    ]);
-
-    $total = 0;
-
-    foreach ($cart->items as $item) {
-
-        $product = $item->product;
-
-        if ($product->stock < $item->quantity) {
-            abort(400, 'Not enough stock');
+        if (!$cart || $cart->items->count() == 0) {
+            abort(400, 'Cart is empty');
         }
 
-        $order->items()->create([
-            'product_id' => $product->id,
-            'quantity' => $item->quantity,
-            'price' => $product->price
+        $order = Order::create([
+
+            'user_id' => $user->id,
+
+            'status' => 'pending',
+
+            'address' => $address,
+
+            'total_price' => 0
         ]);
 
-        $total += $product->price * $item->quantity;
+        $total = 0;
 
-        $product->decrement('stock', $item->quantity);
+        foreach ($cart->items as $item) {
+
+            $product = $item->product;
+
+            // stock check
+            if ($product->stock < $item->quantity) {
+
+                abort(400, 'Not enough stock');
+            }
+
+            // create order item
+            $order->items()->create([
+
+                'product_id' => $product->id,
+
+                'quantity' => $item->quantity,
+
+                'price' => $product->price
+            ]);
+
+            // calculate total
+            $total += $product->price * $item->quantity;
+
+            // decrease stock
+            $product->decrement('stock', $item->quantity);
+        }
+
+        // ====================================
+        //  APPLY COUPON
+        // ====================================
+
+        if ($couponCode) {
+
+            $coupon = Coupon::where('code', $couponCode)
+
+                ->where('is_active', true)
+
+                ->where(function ($q) {
+
+                    $q->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+                })
+
+                ->first();
+
+            if (!$coupon) {
+
+                abort(400, 'Invalid coupon');
+            }
+
+            // usage limit
+            if (
+
+                $coupon->usage_limit &&
+
+                $coupon->used_count >= $coupon->usage_limit
+            ) {
+
+                abort(400, 'Coupon usage limit reached');
+            }
+
+            // fixed discount
+            if ($coupon->type === 'fixed') {
+
+                $total -= $coupon->value;
+
+            } else {
+
+                // percent discount
+                $total -= ($total * $coupon->value / 100);
+            }
+
+            // prevent negative price
+            $total = max(0, $total);
+
+            // increment usage
+            $coupon->increment('used_count');
+        }
+
+        // ====================================
+
+        $order->update([
+
+            'total_price' => $total
+        ]);
+
+        // clear cart
+        $cart->items()->delete();
+
+        return $order->load('items.product');
     }
-
-    $order->update(['total_price' => $total]);
-
-    $cart->items()->delete();
-
-    return $order->load('items.product');
-}
-
 }

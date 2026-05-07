@@ -23,7 +23,8 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
        return [
-            'address' => 'required|string'
+            'address' => 'required|string',
+            'coupon_code' => 'nullable|string'
         ];
     }
 }

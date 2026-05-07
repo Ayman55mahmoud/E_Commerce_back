@@ -59,8 +59,12 @@ public function destroy(Order $order)
  public function checkout(CheckoutRequest $request)
     {
         $order = $this->service->checkout(
+
             auth()->user(),
-            $request->address
+
+            $request->address,
+
+            $request->coupon_code
         );
 
         return new OrderResource($order);

@@ -99,9 +99,16 @@ public function delete($order, $user)
     return $this->repo->cancel($order);
 }
 
-public function checkout($user, $address)
-{
-    return $this->repo->checkoutFromCart($user, $address);
-}
+public function checkout($user, $address, $couponCode = null)
+    {
+        return $this->repo->checkoutFromCart(
+
+            $user,
+
+            $address,
+
+            $couponCode
+        );
+    }
 
 }
