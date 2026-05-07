@@ -8,9 +8,9 @@ class ProductRepository
 {
     public function getAll($filters)
     {
-        $query = Product::query();
+        $query = Product::with('images');
 
-        // 🔍 Search
+        //  Search
         if (!empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['search'] . '%')
@@ -18,7 +18,7 @@ class ProductRepository
             });
         }
 
-        // 💰 Price filter
+        //  Price filter
         if (!empty($filters['min_price'])) {
             $query->where('price', '>=', $filters['min_price']);
         }
@@ -27,7 +27,7 @@ class ProductRepository
             $query->where('price', '<=', $filters['max_price']);
         }
 
-        // 📊 Sorting
+        //  Sorting
         if (!empty($filters['sort'])) {
             if ($filters['sort'] === 'price_asc') {
                 $query->orderBy('price', 'asc');
@@ -46,24 +46,73 @@ class ProductRepository
 
     public function find($id)
     {
-        return Product::findOrFail($id);
+        return Product::with('images')
+        ->findOrFail($id);
     }
 
     public function create(array $data)
-    {
-        return Product::create($data);
+{
+    $images = $data['images'] ?? [];
+
+    unset($data['images']);
+
+    $product = Product::create($data);
+
+    foreach ($images as $image) {
+
+        $path = $image->store('products', 'public');
+
+        $product->images()->create([
+            'image' => $path
+        ]);
     }
+
+    return $product->load('images');
+}
 
     public function update($id, array $data)
-    {
-        $product = $this->find($id);
-        $product->update($data);
-        return $product;
+{
+    $product = $this->find($id);
+
+    $images = $data['images'] ?? [];
+
+    unset($data['images']);
+
+    $product->update($data);
+
+    if (!empty($images)) {
+
+        foreach ($product->images as $oldImage) {
+
+            \Storage::disk('public')
+                ->delete($oldImage->image);
+
+            $oldImage->delete();
+        }
+
+        foreach ($images as $image) {
+
+            $path = $image->store('products', 'public');
+
+            $product->images()->create([
+                'image' => $path
+            ]);
+        }
     }
 
+    return $product->load('images');
+}
+
     public function delete($id)
-    {
-        $product = $this->find($id);
-        return $product->delete(); 
+{
+    $product = $this->find($id);
+
+    foreach ($product->images as $image) {
+
+        \Storage::disk('public')
+            ->delete($image->image);
     }
+
+    return $product->delete();
+}
 }

@@ -11,12 +11,12 @@ class OrderRepository
 {
     $query = Order::with('items.product');
 
-    // 👤 لو مش admin
+    //  لو مش admin
     if (!$user->isAdmin()) {
         $query->where('user_id', $user->id);
     }
 
-    // 🎯 filter
+    //  filter
     if (!empty($filters['status'])) {
         $query->where('status', $filters['status']);
     }
@@ -64,11 +64,13 @@ class OrderRepository
     }
 
     public function updateStatus($order, $status)
-    {
-        $order->update(['status' => $status]);
-        return $order;
-    }
+{
+    $order->update([
+        'status' => $status
+    ]);
 
+    return $order->fresh();
+}
     public function cancel($order)
     {
         $order->update(['status' => 'cancelled']);

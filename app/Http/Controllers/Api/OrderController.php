@@ -34,13 +34,14 @@ public function show(Order $order)
 public function update(Request $request, Order $order)
 {
     $request->validate([
-        'status' => 'required|in:pending,paid,shipped,delivered,cancelled'
+
+        'status' =>
+            'required|in:pending,paid,shipped,delivered,cancelled'
     ]);
 
     $updated = $this->service->update(
         $order,
-        $request->status,
-        auth()->user()
+        $request->status
     );
 
     return new OrderResource($updated);

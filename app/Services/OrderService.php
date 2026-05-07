@@ -49,21 +49,43 @@ public function create($data, $user)
     }
 }
 
-public function update($order, $status, $user)
+public function update($order, $status)
 {
-    // 👑 admin بس
-    if (!$user->isAdmin()) {
-        abort(403);
+    $current = $order->status;
+
+    $allowedTransitions = [
+
+        'pending' => ['paid', 'cancelled'],
+
+        'paid' => ['shipped', 'cancelled'],
+
+        'shipped' => ['delivered'],
+
+        'delivered' => [],
+
+        'cancelled' => []
+    ];
+
+    if (!in_array($status, $allowedTransitions[$current])) {
+
+        abort(400, "Invalid status transition");
     }
 
-    Log::info('Order updated', ['id' => $order->id]);
+    Log::info('Order status updated', [
+
+        'order_id' => $order->id,
+
+        'from' => $current,
+
+        'to' => $status
+    ]);
 
     return $this->repo->updateStatus($order, $status);
 }
 
 public function delete($order, $user)
 {
-    // 👤 user بس على بتاعه
+    //  user بس على بتاعه
     if ($order->user_id !== $user->id) {
         abort(403);
     }

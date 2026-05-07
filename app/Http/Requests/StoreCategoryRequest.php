@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProductRequest extends FormRequest
+class StoreCategoryRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,12 +23,10 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
-        'description' => 'sometimes|string',
-        'price' => 'sometimes|numeric|min:0',
-        'images' => 'nullable|array',
-        'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
-        'stock' => 'sometimes|integer|min:0'
+
+            'name' => 'required|string|max:255|unique:categories,name',
+
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ];
     }
 }
