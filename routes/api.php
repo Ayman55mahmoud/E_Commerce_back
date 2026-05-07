@@ -71,8 +71,11 @@ Route::middleware('auth:sanctum')->group(function () {
     | CHECKOUT (Cart → Order)
     |-------------------------
     */
-    Route::post('/checkout', [OrderController::class, 'checkout']);
+    // preview coupon
+    Route::post('/coupons/apply', [CouponController::class, 'apply']);
 
+    // real checkout
+    Route::post('/orders/checkout', [OrderController::class, 'checkout']);
     /*
     |-------------------------
     | ORDERS (User + Admin logic inside service)
