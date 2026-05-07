@@ -24,7 +24,7 @@ class SendOrderEmailToAdmin implements ShouldQueue
 
     public function handle(): void
     {
-        // مهم جدًا: نضمن إن العلاقات متحمّلة
+        //  نضمن إن العلاقات متحمّلة
         $order = $this->order->load('user');
 
         Mail::to(env('ADMIN_EMAIL', 'admin@gmail.com'))
