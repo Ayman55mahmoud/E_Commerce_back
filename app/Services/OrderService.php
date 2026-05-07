@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Jobs\SendOrderEmail;
+use App\Jobs\SendOrderEmailToAdmin;
 use App\Repositories\OrderRepository;
 use Illuminate\Support\Facades\Log;
 
@@ -37,7 +37,7 @@ public function create($data, $user)
 
         Log::info('Order created', ['order_id' => $order->id]);
 
-        SendOrderEmail::dispatch($order);
+        SendOrderEmailToAdmin::dispatch($order);
 
         DB::commit();
 
