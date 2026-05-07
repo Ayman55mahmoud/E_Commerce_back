@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProductDiscoveryController;
+use App\Http\Controllers\Api\CouponController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +30,60 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
+//----------------------------------------------------------------------------
+// discover <----
+
+
+Route::prefix('discover')->group(function () {
+
+    //  BEST SELLERS
+    Route::get(
+        '/best-sellers',
+        [ProductDiscoveryController::class, 'bestSellers']
+    );
+
+    //  LOW TO HIGH
+    Route::get(
+        '/price-low-high',
+        [ProductDiscoveryController::class, 'lowToHigh']
+    );
+
+    //  HIGH TO LOW
+    Route::get(
+        '/price-high-low',
+        [ProductDiscoveryController::class, 'highToLow']
+    );
+
+    //  NEW ARRIVALS
+    Route::get(
+        '/new-arrivals',
+        [ProductDiscoveryController::class, 'newArrivals']
+    );
+
+    //  MOST VIEWED
+    Route::get(
+        '/most-viewed',
+        [ProductDiscoveryController::class, 'mostViewed']
+    );
+
+    //  SEARCH
+    Route::get(
+        '/search',
+        [ProductDiscoveryController::class, 'search']
+    );
+
+    //  IN STOCK
+    Route::get(
+        '/in-stock',
+        [ProductDiscoveryController::class, 'inStock']
+    );
+
+    //  CATEGORY FILTER
+    Route::get(
+        '/category/{id}',
+        [ProductDiscoveryController::class, 'byCategory']
+    );
+});
 
 
 /*

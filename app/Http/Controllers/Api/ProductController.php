@@ -19,7 +19,7 @@ class ProductController extends Controller
         $this->service = $service;
     }
 
-    // 📦 GET ALL
+    //  GET ALL
     public function index(Request $request)
     {
         $products = $this->service->getAllProducts($request->all());
@@ -27,13 +27,14 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
-    // 📄 GET ONE (Route Model Binding)
+    //  GET ONE (Route Model Binding)
     public function show(Product $product)
     {
+        $product->increment('views');
         return new ProductResource($product);
     }
 
-    // ➕ CREATE
+    //  CREATE
     public function store(StoreProductRequest $request)
     {
         $product = $this->service->createProduct($request->validated());
@@ -41,7 +42,7 @@ class ProductController extends Controller
         return new ProductResource($product);
     }
 
-    // ✏️ UPDATE
+    //  UPDATE
     public function update(UpdateProductRequest $request, Product $product)
     {
         $updated = $this->service->updateProduct(
@@ -52,7 +53,7 @@ class ProductController extends Controller
         return new ProductResource($updated);
     }
 
-    // ❌ DELETE (Soft Delete)
+    //  DELETE (Soft Delete)
     public function destroy(Product $product)
     {
         $this->service->deleteProduct($product->id);
